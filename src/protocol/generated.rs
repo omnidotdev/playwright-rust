@@ -15,7 +15,12 @@ pub mod api_request_context {
     }
     pub mod commands {
         pub type Dispose = ();
-        pub type DisposeArgs = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct DisposeArgs<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "reason")]
+            pub(crate) reason: Option<&'a str>
+        }
         pub type DisposeApiResponse = ();
         #[derive(Debug, Serialize, Deserialize)]
         pub struct DisposeApiResponseArgs<'a> {
@@ -30,6 +35,9 @@ pub mod api_request_context {
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct FetchArgs<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "encodedParams")]
+            pub(crate) encoded_params: Option<&'a str>,
             #[serde(rename = "failOnStatusCode")]
             pub(crate) fail_on_status_code: Option<bool>,
             #[serde(rename = "formData")]
@@ -43,6 +51,8 @@ pub mod api_request_context {
             pub(crate) json_data: Option<&'a str>,
             #[serde(rename = "maxRedirects")]
             pub(crate) max_redirects: Option<serde_json::Number>,
+            #[serde(rename = "maxRetries")]
+            pub(crate) max_retries: Option<serde_json::Number>,
             #[serde(borrow)]
             #[serde(rename = "method")]
             pub(crate) method: Option<&'a str>,
@@ -504,7 +514,7 @@ pub mod artifact {
         #[derive(Debug, Serialize, Deserialize)]
         pub struct PathAfterFinished {
             #[serde(rename = "value")]
-            pub(crate) value: Option<String>
+            pub(crate) value: String
         }
         pub type PathAfterFinishedArgs = ();
         pub type SaveAs = ();
@@ -523,7 +533,7 @@ pub mod artifact {
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Stream {
             #[serde(rename = "stream")]
-            pub(crate) stream: Option<crate::protocol::generated::Stream>
+            pub(crate) stream: crate::protocol::generated::Stream
         }
         pub type StreamArgs = ();
     }
@@ -574,7 +584,12 @@ pub mod browser {
     }
     pub mod commands {
         pub type Close = ();
-        pub type CloseArgs = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct CloseArgs<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "reason")]
+            pub(crate) reason: Option<&'a str>
+        }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct DefaultUserAgentForTest {
             #[serde(rename = "userAgent")]
@@ -732,7 +747,9 @@ pub mod browser_context {
             #[serde(rename = "serviceWorker")]
             ServiceWorker(ServiceWorker),
             #[serde(rename = "video")]
-            Video(Video)
+            Video(Video),
+            #[serde(rename = "webSocketRoute")]
+            WebSocketRoute(WebSocketRoute)
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct BackgroundPage {
@@ -746,25 +763,11 @@ pub mod browser_context {
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Console {
-            #[serde(rename = "args")]
-            pub(crate) args: Vec<crate::protocol::generated::JsHandle>,
-            #[serde(rename = "location")]
-            pub(crate) location: ConsoleLocation,
+            #[serde(flatten)]
+            #[serde(rename = "$mixin")]
+            pub(crate) mixin: crate::protocol::generated::ConsoleMessage,
             #[serde(rename = "page")]
-            pub(crate) page: crate::protocol::generated::Page,
-            #[serde(rename = "text")]
-            pub(crate) text: String,
-            #[serde(rename = "type")]
-            pub(crate) r#type: String
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        pub struct ConsoleLocation {
-            #[serde(rename = "columnNumber")]
-            pub(crate) column_number: serde_json::Number,
-            #[serde(rename = "lineNumber")]
-            pub(crate) line_number: serde_json::Number,
-            #[serde(rename = "url")]
-            pub(crate) url: String
+            pub(crate) page: crate::protocol::generated::Page
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Dialog {
@@ -834,6 +837,11 @@ pub mod browser_context {
             #[serde(rename = "artifact")]
             pub(crate) artifact: crate::protocol::generated::Artifact
         }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct WebSocketRoute {
+            #[serde(rename = "webSocketRoute")]
+            pub(crate) web_socket_route: crate::protocol::generated::WebSocketRoute
+        }
     }
     pub mod commands {
         pub type AddCookies = ();
@@ -850,11 +858,101 @@ pub mod browser_context {
             pub(crate) source: &'a str
         }
         pub type ClearCookies = ();
-        pub type ClearCookiesArgs = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct ClearCookiesArgs<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "domain")]
+            pub(crate) domain: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "domainRegexFlags")]
+            pub(crate) domain_regex_flags: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "domainRegexSource")]
+            pub(crate) domain_regex_source: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "name")]
+            pub(crate) name: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "nameRegexFlags")]
+            pub(crate) name_regex_flags: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "nameRegexSource")]
+            pub(crate) name_regex_source: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "path")]
+            pub(crate) path: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "pathRegexFlags")]
+            pub(crate) path_regex_flags: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "pathRegexSource")]
+            pub(crate) path_regex_source: Option<&'a str>
+        }
         pub type ClearPermissions = ();
         pub type ClearPermissionsArgs = ();
+        pub type ClockFastForward = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct ClockFastForwardArgs<'a> {
+            #[serde(rename = "ticksNumber")]
+            pub(crate) ticks_number: Option<serde_json::Number>,
+            #[serde(borrow)]
+            #[serde(rename = "ticksString")]
+            pub(crate) ticks_string: Option<&'a str>
+        }
+        pub type ClockInstall = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct ClockInstallArgs<'a> {
+            #[serde(rename = "timeNumber")]
+            pub(crate) time_number: Option<serde_json::Number>,
+            #[serde(borrow)]
+            #[serde(rename = "timeString")]
+            pub(crate) time_string: Option<&'a str>
+        }
+        pub type ClockPauseAt = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct ClockPauseAtArgs<'a> {
+            #[serde(rename = "timeNumber")]
+            pub(crate) time_number: Option<serde_json::Number>,
+            #[serde(borrow)]
+            #[serde(rename = "timeString")]
+            pub(crate) time_string: Option<&'a str>
+        }
+        pub type ClockResume = ();
+        pub type ClockResumeArgs = ();
+        pub type ClockRunFor = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct ClockRunForArgs<'a> {
+            #[serde(rename = "ticksNumber")]
+            pub(crate) ticks_number: Option<serde_json::Number>,
+            #[serde(borrow)]
+            #[serde(rename = "ticksString")]
+            pub(crate) ticks_string: Option<&'a str>
+        }
+        pub type ClockSetFixedTime = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct ClockSetFixedTimeArgs<'a> {
+            #[serde(rename = "timeNumber")]
+            pub(crate) time_number: Option<serde_json::Number>,
+            #[serde(borrow)]
+            #[serde(rename = "timeString")]
+            pub(crate) time_string: Option<&'a str>
+        }
+        pub type ClockSetSystemTime = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct ClockSetSystemTimeArgs<'a> {
+            #[serde(rename = "timeNumber")]
+            pub(crate) time_number: Option<serde_json::Number>,
+            #[serde(borrow)]
+            #[serde(rename = "timeString")]
+            pub(crate) time_string: Option<&'a str>
+        }
         pub type Close = ();
-        pub type CloseArgs = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct CloseArgs<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "reason")]
+            pub(crate) reason: Option<&'a str>
+        }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Cookies {
             #[serde(rename = "cookies")]
@@ -867,15 +965,77 @@ pub mod browser_context {
             pub(crate) urls: Vec<&'a str>
         }
         #[derive(Debug, Serialize, Deserialize)]
-        pub struct CreateTempFile {
-            #[serde(rename = "writableStream")]
-            pub(crate) writable_stream: crate::protocol::generated::WritableStream
+        pub struct CreateTempFiles {
+            #[serde(rename = "rootDir")]
+            pub(crate) root_dir: Option<crate::protocol::generated::WritableStream>,
+            #[serde(rename = "writableStreams")]
+            pub(crate) writable_streams: Vec<crate::protocol::generated::WritableStream>
         }
         #[derive(Debug, Serialize, Deserialize)]
-        pub struct CreateTempFileArgs<'a> {
+        pub struct CreateTempFilesArgs<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "items")]
+            pub(crate) items: Vec<CreateTempFilesArgsItems<'a>>,
+            #[serde(borrow)]
+            #[serde(rename = "rootDirName")]
+            pub(crate) root_dir_name: Option<&'a str>
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct CreateTempFilesArgsItems<'a> {
+            #[serde(rename = "lastModifiedMs")]
+            pub(crate) last_modified_ms: Option<serde_json::Number>,
             #[serde(borrow)]
             #[serde(rename = "name")]
             pub(crate) name: &'a str
+        }
+        pub type EnableRecorder = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct EnableRecorderArgs<'a> {
+            #[serde(rename = "codegenMode")]
+            pub(crate) codegen_mode: Option<EnableRecorderArgsCodegenMode>,
+            #[serde(borrow)]
+            #[serde(rename = "contextOptions")]
+            pub(crate) context_options: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "device")]
+            pub(crate) device: Option<&'a str>,
+            #[serde(rename = "handleSIGINT")]
+            pub(crate) handle_sigint: Option<bool>,
+            #[serde(borrow)]
+            #[serde(rename = "language")]
+            pub(crate) language: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "launchOptions")]
+            pub(crate) launch_options: Option<&'a str>,
+            #[serde(rename = "mode")]
+            pub(crate) mode: Option<EnableRecorderArgsMode>,
+            #[serde(rename = "omitCallTracking")]
+            pub(crate) omit_call_tracking: Option<bool>,
+            #[serde(borrow)]
+            #[serde(rename = "outputFile")]
+            pub(crate) output_file: Option<&'a str>,
+            #[serde(rename = "pauseOnNextStatement")]
+            pub(crate) pause_on_next_statement: Option<bool>,
+            #[serde(borrow)]
+            #[serde(rename = "saveStorage")]
+            pub(crate) save_storage: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "testIdAttributeName")]
+            pub(crate) test_id_attribute_name: Option<&'a str>
+        }
+        #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+        pub enum EnableRecorderArgsCodegenMode {
+            #[serde(rename = "actions")]
+            Actions,
+            #[serde(rename = "trace-events")]
+            TraceEvents
+        }
+        #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+        pub enum EnableRecorderArgsMode {
+            #[serde(rename = "inspecting")]
+            Inspecting,
+            #[serde(rename = "recording")]
+            Recording
         }
         pub type ExposeBinding = ();
         #[derive(Debug, Serialize, Deserialize)]
@@ -939,46 +1099,6 @@ pub mod browser_context {
         pub type NewPageArgs = ();
         pub type Pause = ();
         pub type PauseArgs = ();
-        pub type RecorderSupplementEnable = ();
-        #[derive(Debug, Serialize, Deserialize)]
-        pub struct RecorderSupplementEnableArgs<'a> {
-            #[serde(borrow)]
-            #[serde(rename = "contextOptions")]
-            pub(crate) context_options: Option<&'a str>,
-            #[serde(borrow)]
-            #[serde(rename = "device")]
-            pub(crate) device: Option<&'a str>,
-            #[serde(rename = "handleSIGINT")]
-            pub(crate) handle_sigint: Option<bool>,
-            #[serde(borrow)]
-            #[serde(rename = "language")]
-            pub(crate) language: Option<&'a str>,
-            #[serde(borrow)]
-            #[serde(rename = "launchOptions")]
-            pub(crate) launch_options: Option<&'a str>,
-            #[serde(rename = "mode")]
-            pub(crate) mode: Option<RecorderSupplementEnableArgsMode>,
-            #[serde(rename = "omitCallTracking")]
-            pub(crate) omit_call_tracking: Option<bool>,
-            #[serde(borrow)]
-            #[serde(rename = "outputFile")]
-            pub(crate) output_file: Option<&'a str>,
-            #[serde(rename = "pauseOnNextStatement")]
-            pub(crate) pause_on_next_statement: Option<bool>,
-            #[serde(borrow)]
-            #[serde(rename = "saveStorage")]
-            pub(crate) save_storage: Option<&'a str>,
-            #[serde(borrow)]
-            #[serde(rename = "testIdAttributeName")]
-            pub(crate) test_id_attribute_name: Option<&'a str>
-        }
-        #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
-        pub enum RecorderSupplementEnableArgsMode {
-            #[serde(rename = "inspecting")]
-            Inspecting,
-            #[serde(rename = "recording")]
-            Recording
-        }
         pub type SetDefaultNavigationTimeoutNoReply = ();
         #[derive(Debug, Serialize, Deserialize)]
         pub struct SetDefaultNavigationTimeoutNoReplyArgs {
@@ -1056,6 +1176,25 @@ pub mod browser_context {
             #[serde(rename = "offline")]
             pub(crate) offline: bool
         }
+        pub type SetWebSocketInterceptionPatterns = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct SetWebSocketInterceptionPatternsArgs<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "patterns")]
+            pub(crate) patterns: Vec<SetWebSocketInterceptionPatternsArgsPatterns<'a>>
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct SetWebSocketInterceptionPatternsArgsPatterns<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "glob")]
+            pub(crate) glob: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "regexFlags")]
+            pub(crate) regex_flags: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "regexSource")]
+            pub(crate) regex_source: Option<&'a str>
+        }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct StorageState {
             #[serde(rename = "cookies")]
@@ -1124,13 +1263,10 @@ pub mod browser_type {
             pub(crate) browser: crate::protocol::generated::Browser
         }
         #[derive(Debug, Serialize, Deserialize)]
-        pub struct LaunchArgs<'a> {
+        pub struct LaunchArgs {
             #[serde(flatten)]
             #[serde(rename = "$mixin")]
             pub(crate) mixin: crate::protocol::generated::LaunchOptions,
-            #[serde(borrow)]
-            #[serde(rename = "firefoxUserPrefs")]
-            pub(crate) firefox_user_prefs: Option<&'a str>,
             #[serde(rename = "slowMo")]
             pub(crate) slow_mo: Option<serde_json::Number>
         }
@@ -1195,31 +1331,16 @@ pub mod debug_controller {
     pub mod events {
         #[derive(Debug, Deserialize, Serialize)]
         pub enum Events {
-            #[serde(rename = "browsersChanged")]
-            BrowsersChanged(BrowsersChanged),
             #[serde(rename = "inspectRequested")]
             InspectRequested(InspectRequested),
             #[serde(rename = "paused")]
             Paused(Paused),
+            #[serde(rename = "setModeRequested")]
+            SetModeRequested(SetModeRequested),
             #[serde(rename = "sourceChanged")]
             SourceChanged(SourceChanged),
             #[serde(rename = "stateChanged")]
             StateChanged(StateChanged)
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        pub struct BrowsersChanged {
-            #[serde(rename = "browsers")]
-            pub(crate) browsers: Vec<BrowsersChangedBrowsers>
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        pub struct BrowsersChangedBrowsers {
-            #[serde(rename = "contexts")]
-            pub(crate) contexts: Vec<BrowsersChangedBrowsersContexts>
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        pub struct BrowsersChangedBrowsersContexts {
-            #[serde(rename = "pages")]
-            pub(crate) pages: Vec<String>
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct InspectRequested {
@@ -1232,6 +1353,11 @@ pub mod debug_controller {
         pub struct Paused {
             #[serde(rename = "paused")]
             pub(crate) paused: bool
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct SetModeRequested {
+            #[serde(rename = "mode")]
+            pub(crate) mode: String
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct SourceChanged {
@@ -1259,8 +1385,11 @@ pub mod debug_controller {
         #[derive(Debug, Serialize, Deserialize)]
         pub struct HighlightArgs<'a> {
             #[serde(borrow)]
+            #[serde(rename = "ariaTemplate")]
+            pub(crate) aria_template: Option<&'a str>,
+            #[serde(borrow)]
             #[serde(rename = "selector")]
-            pub(crate) selector: &'a str
+            pub(crate) selector: Option<&'a str>
         }
         pub type Initialize = ();
         #[derive(Debug, Serialize, Deserialize)]
@@ -1472,7 +1601,15 @@ pub mod electron_application {
         #[derive(Debug, Deserialize, Serialize)]
         pub enum Events {
             #[serde(rename = "close")]
-            Close
+            Close,
+            #[serde(rename = "console")]
+            Console(Console)
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct Console {
+            #[serde(flatten)]
+            #[serde(rename = "$mixin")]
+            pub(crate) mixin: crate::protocol::generated::ConsoleMessage
         }
     }
     pub mod commands {
@@ -1486,8 +1623,6 @@ pub mod electron_application {
             #[serde(rename = "page")]
             pub(crate) page: crate::protocol::generated::Page
         }
-        pub type Close = ();
-        pub type CloseArgs = ();
         #[derive(Debug, Serialize, Deserialize)]
         pub struct EvaluateExpression {
             #[serde(rename = "value")]
@@ -1518,6 +1653,19 @@ pub mod electron_application {
             #[serde(rename = "isFunction")]
             pub(crate) is_function: Option<bool>
         }
+        pub type UpdateSubscription = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct UpdateSubscriptionArgs {
+            #[serde(rename = "enabled")]
+            pub(crate) enabled: bool,
+            #[serde(rename = "event")]
+            pub(crate) event: UpdateSubscriptionArgsEvent
+        }
+        #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+        pub enum UpdateSubscriptionArgsEvent {
+            #[serde(rename = "console")]
+            Console
+        }
     }
 }
 pub(crate) type ElementHandle = OnlyGuid;
@@ -1535,8 +1683,6 @@ pub mod element_handle {
         pub struct CheckArgs {
             #[serde(rename = "force")]
             pub(crate) force: Option<bool>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(rename = "position")]
             pub(crate) position: Option<crate::protocol::generated::Point>,
             #[serde(rename = "timeout")]
@@ -1579,6 +1725,7 @@ pub mod element_handle {
         pub enum ClickArgsModifiers {
             Alt,
             Control,
+            ControlOrMeta,
             Meta,
             Shift
         }
@@ -1599,8 +1746,6 @@ pub mod element_handle {
             pub(crate) force: Option<bool>,
             #[serde(rename = "modifiers")]
             pub(crate) modifiers: Option<Vec<DblclickArgsModifiers>>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(rename = "position")]
             pub(crate) position: Option<crate::protocol::generated::Point>,
             #[serde(rename = "timeout")]
@@ -1621,6 +1766,7 @@ pub mod element_handle {
         pub enum DblclickArgsModifiers {
             Alt,
             Control,
+            ControlOrMeta,
             Meta,
             Shift
         }
@@ -1676,8 +1822,6 @@ pub mod element_handle {
         pub struct FillArgs<'a> {
             #[serde(rename = "force")]
             pub(crate) force: Option<bool>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(rename = "timeout")]
             pub(crate) timeout: Option<serde_json::Number>,
             #[serde(borrow)]
@@ -1704,8 +1848,6 @@ pub mod element_handle {
             pub(crate) force: Option<bool>,
             #[serde(rename = "modifiers")]
             pub(crate) modifiers: Option<Vec<HoverArgsModifiers>>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(rename = "position")]
             pub(crate) position: Option<crate::protocol::generated::Point>,
             #[serde(rename = "timeout")]
@@ -1717,6 +1859,7 @@ pub mod element_handle {
         pub enum HoverArgsModifiers {
             Alt,
             Control,
+            ControlOrMeta,
             Meta,
             Shift
         }
@@ -1858,8 +2001,6 @@ pub mod element_handle {
             pub(crate) elements: Option<Vec<crate::protocol::generated::ElementHandle>>,
             #[serde(rename = "force")]
             pub(crate) force: Option<bool>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(borrow)]
             #[serde(rename = "options")]
             pub(crate) options: Option<Vec<SelectOptionArgsOptions<'a>>>,
@@ -1888,32 +2029,27 @@ pub mod element_handle {
             #[serde(rename = "timeout")]
             pub(crate) timeout: Option<serde_json::Number>
         }
-        pub type SetInputFilePaths = ();
+        pub type SetInputFiles = ();
         #[derive(Debug, Serialize, Deserialize)]
-        pub struct SetInputFilePathsArgs<'a> {
+        pub struct SetInputFilesArgs<'a> {
+            #[serde(rename = "directoryStream")]
+            pub(crate) directory_stream: Option<crate::protocol::generated::WritableStream>,
+            #[serde(borrow)]
+            #[serde(rename = "localDirectory")]
+            pub(crate) local_directory: Option<&'a str>,
             #[serde(borrow)]
             #[serde(rename = "localPaths")]
             pub(crate) local_paths: Option<Vec<&'a str>>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
+            #[serde(borrow)]
+            #[serde(rename = "payloads")]
+            pub(crate) payloads: Option<Vec<SetInputFilesArgsPayloads<'a>>>,
             #[serde(rename = "streams")]
             pub(crate) streams: Option<Vec<crate::protocol::generated::WritableStream>>,
             #[serde(rename = "timeout")]
             pub(crate) timeout: Option<serde_json::Number>
         }
-        pub type SetInputFiles = ();
         #[derive(Debug, Serialize, Deserialize)]
-        pub struct SetInputFilesArgs<'a> {
-            #[serde(borrow)]
-            #[serde(rename = "files")]
-            pub(crate) files: Vec<SetInputFilesArgsFiles<'a>>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
-            #[serde(rename = "timeout")]
-            pub(crate) timeout: Option<serde_json::Number>
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        pub struct SetInputFilesArgsFiles<'a> {
+        pub struct SetInputFilesArgsPayloads<'a> {
             #[serde(borrow)]
             #[serde(rename = "buffer")]
             pub(crate) buffer: &'a [u8],
@@ -1931,8 +2067,6 @@ pub mod element_handle {
             pub(crate) force: Option<bool>,
             #[serde(rename = "modifiers")]
             pub(crate) modifiers: Option<Vec<TapArgsModifiers>>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(rename = "position")]
             pub(crate) position: Option<crate::protocol::generated::Point>,
             #[serde(rename = "timeout")]
@@ -1944,6 +2078,7 @@ pub mod element_handle {
         pub enum TapArgsModifiers {
             Alt,
             Control,
+            ControlOrMeta,
             Meta,
             Shift
         }
@@ -1958,8 +2093,6 @@ pub mod element_handle {
         pub struct TypeArgs<'a> {
             #[serde(rename = "delay")]
             pub(crate) delay: Option<serde_json::Number>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(borrow)]
             #[serde(rename = "text")]
             pub(crate) text: &'a str,
@@ -1971,8 +2104,6 @@ pub mod element_handle {
         pub struct UncheckArgs {
             #[serde(rename = "force")]
             pub(crate) force: Option<bool>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(rename = "position")]
             pub(crate) position: Option<crate::protocol::generated::Point>,
             #[serde(rename = "timeout")]
@@ -2148,6 +2279,19 @@ pub mod frame {
             #[serde(rename = "url")]
             pub(crate) url: Option<&'a str>
         }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct AriaSnapshot {
+            #[serde(rename = "snapshot")]
+            pub(crate) snapshot: String
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct AriaSnapshotArgs<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "selector")]
+            pub(crate) selector: &'a str,
+            #[serde(rename = "timeout")]
+            pub(crate) timeout: Option<serde_json::Number>
+        }
         pub type Blur = ();
         #[derive(Debug, Serialize, Deserialize)]
         pub struct BlurArgs<'a> {
@@ -2164,8 +2308,6 @@ pub mod frame {
         pub struct CheckArgs<'a> {
             #[serde(rename = "force")]
             pub(crate) force: Option<bool>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(rename = "position")]
             pub(crate) position: Option<crate::protocol::generated::Point>,
             #[serde(borrow)]
@@ -2218,6 +2360,7 @@ pub mod frame {
         pub enum ClickArgsModifiers {
             Alt,
             Control,
+            ControlOrMeta,
             Meta,
             Shift
         }
@@ -2238,8 +2381,6 @@ pub mod frame {
             pub(crate) force: Option<bool>,
             #[serde(rename = "modifiers")]
             pub(crate) modifiers: Option<Vec<DblclickArgsModifiers>>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(rename = "position")]
             pub(crate) position: Option<crate::protocol::generated::Point>,
             #[serde(borrow)]
@@ -2265,6 +2406,7 @@ pub mod frame {
         pub enum DblclickArgsModifiers {
             Alt,
             Control,
+            ControlOrMeta,
             Meta,
             Shift
         }
@@ -2289,8 +2431,6 @@ pub mod frame {
         pub struct DragAndDropArgs<'a> {
             #[serde(rename = "force")]
             pub(crate) force: Option<bool>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(borrow)]
             #[serde(rename = "source")]
             pub(crate) source: &'a str,
@@ -2355,8 +2495,6 @@ pub mod frame {
         pub struct EvaluateExpressionArgs<'a> {
             #[serde(rename = "arg")]
             pub(crate) arg: crate::protocol::generated::SerializedArgument,
-            #[serde(rename = "exposeUtilityScript")]
-            pub(crate) expose_utility_script: Option<bool>,
             #[serde(borrow)]
             #[serde(rename = "expression")]
             pub(crate) expression: &'a str,
@@ -2409,7 +2547,7 @@ pub mod frame {
             #[serde(rename = "selector")]
             pub(crate) selector: &'a str,
             #[serde(rename = "timeout")]
-            pub(crate) timeout: Option<serde_json::Number>,
+            pub(crate) timeout: serde_json::Number,
             #[serde(rename = "useInnerText")]
             pub(crate) use_inner_text: Option<bool>
         }
@@ -2418,8 +2556,6 @@ pub mod frame {
         pub struct FillArgs<'a> {
             #[serde(rename = "force")]
             pub(crate) force: Option<bool>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(borrow)]
             #[serde(rename = "selector")]
             pub(crate) selector: &'a str,
@@ -2498,8 +2634,6 @@ pub mod frame {
             pub(crate) force: Option<bool>,
             #[serde(rename = "modifiers")]
             pub(crate) modifiers: Option<Vec<HoverArgsModifiers>>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(rename = "position")]
             pub(crate) position: Option<crate::protocol::generated::Point>,
             #[serde(borrow)]
@@ -2516,6 +2650,7 @@ pub mod frame {
         pub enum HoverArgsModifiers {
             Alt,
             Control,
+            ControlOrMeta,
             Meta,
             Shift
         }
@@ -2714,8 +2849,6 @@ pub mod frame {
             pub(crate) elements: Option<Vec<crate::protocol::generated::ElementHandle>>,
             #[serde(rename = "force")]
             pub(crate) force: Option<bool>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(borrow)]
             #[serde(rename = "options")]
             pub(crate) options: Option<Vec<SelectOptionArgsOptions<'a>>>,
@@ -2752,14 +2885,20 @@ pub mod frame {
             #[serde(rename = "waitUntil")]
             pub(crate) wait_until: Option<crate::protocol::generated::LifecycleEvent>
         }
-        pub type SetInputFilePaths = ();
+        pub type SetInputFiles = ();
         #[derive(Debug, Serialize, Deserialize)]
-        pub struct SetInputFilePathsArgs<'a> {
+        pub struct SetInputFilesArgs<'a> {
+            #[serde(rename = "directoryStream")]
+            pub(crate) directory_stream: Option<crate::protocol::generated::WritableStream>,
+            #[serde(borrow)]
+            #[serde(rename = "localDirectory")]
+            pub(crate) local_directory: Option<&'a str>,
             #[serde(borrow)]
             #[serde(rename = "localPaths")]
             pub(crate) local_paths: Option<Vec<&'a str>>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
+            #[serde(borrow)]
+            #[serde(rename = "payloads")]
+            pub(crate) payloads: Option<Vec<SetInputFilesArgsPayloads<'a>>>,
             #[serde(borrow)]
             #[serde(rename = "selector")]
             pub(crate) selector: &'a str,
@@ -2770,24 +2909,8 @@ pub mod frame {
             #[serde(rename = "timeout")]
             pub(crate) timeout: Option<serde_json::Number>
         }
-        pub type SetInputFiles = ();
         #[derive(Debug, Serialize, Deserialize)]
-        pub struct SetInputFilesArgs<'a> {
-            #[serde(borrow)]
-            #[serde(rename = "files")]
-            pub(crate) files: Vec<SetInputFilesArgsFiles<'a>>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
-            #[serde(borrow)]
-            #[serde(rename = "selector")]
-            pub(crate) selector: &'a str,
-            #[serde(rename = "strict")]
-            pub(crate) strict: Option<bool>,
-            #[serde(rename = "timeout")]
-            pub(crate) timeout: Option<serde_json::Number>
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        pub struct SetInputFilesArgsFiles<'a> {
+        pub struct SetInputFilesArgsPayloads<'a> {
             #[serde(borrow)]
             #[serde(rename = "buffer")]
             pub(crate) buffer: &'a [u8],
@@ -2805,8 +2928,6 @@ pub mod frame {
             pub(crate) force: Option<bool>,
             #[serde(rename = "modifiers")]
             pub(crate) modifiers: Option<Vec<TapArgsModifiers>>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(rename = "position")]
             pub(crate) position: Option<crate::protocol::generated::Point>,
             #[serde(borrow)]
@@ -2823,6 +2944,7 @@ pub mod frame {
         pub enum TapArgsModifiers {
             Alt,
             Control,
+            ControlOrMeta,
             Meta,
             Shift
         }
@@ -2852,8 +2974,6 @@ pub mod frame {
         pub struct TypeArgs<'a> {
             #[serde(rename = "delay")]
             pub(crate) delay: Option<serde_json::Number>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(borrow)]
             #[serde(rename = "selector")]
             pub(crate) selector: &'a str,
@@ -2870,8 +2990,6 @@ pub mod frame {
         pub struct UncheckArgs<'a> {
             #[serde(rename = "force")]
             pub(crate) force: Option<bool>,
-            #[serde(rename = "noWaitAfter")]
-            pub(crate) no_wait_after: Option<bool>,
             #[serde(rename = "position")]
             pub(crate) position: Option<crate::protocol::generated::Point>,
             #[serde(borrow)]
@@ -3023,12 +3141,6 @@ pub mod js_handle {
             pub(crate) value: crate::protocol::generated::SerializedValue
         }
         pub type JsonValueArgs = ();
-        #[derive(Debug, Serialize, Deserialize)]
-        pub struct ObjectCount {
-            #[serde(rename = "count")]
-            pub(crate) count: serde_json::Number
-        }
-        pub type ObjectCountArgs = ();
     }
 }
 pub(crate) type JsonPipe = OnlyGuid;
@@ -3043,8 +3155,8 @@ pub mod json_pipe {
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Closed {
-            #[serde(rename = "error")]
-            pub(crate) error: Option<crate::protocol::generated::SerializedError>
+            #[serde(rename = "reason")]
+            pub(crate) reason: Option<String>
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Message {
@@ -3308,12 +3420,16 @@ pub mod page {
             FrameAttached(FrameAttached),
             #[serde(rename = "frameDetached")]
             FrameDetached(FrameDetached),
+            #[serde(rename = "locatorHandlerTriggered")]
+            LocatorHandlerTriggered(LocatorHandlerTriggered),
             #[serde(rename = "route")]
             Route(Route),
             #[serde(rename = "video")]
             Video(Video),
             #[serde(rename = "webSocket")]
             WebSocket(WebSocket),
+            #[serde(rename = "webSocketRoute")]
+            WebSocketRoute(WebSocketRoute),
             #[serde(rename = "worker")]
             Worker(Worker)
         }
@@ -3349,6 +3465,11 @@ pub mod page {
             pub(crate) frame: crate::protocol::generated::Frame
         }
         #[derive(Debug, Serialize, Deserialize)]
+        pub struct LocatorHandlerTriggered {
+            #[serde(rename = "uid")]
+            pub(crate) uid: serde_json::Number
+        }
+        #[derive(Debug, Serialize, Deserialize)]
         pub struct Route {
             #[serde(rename = "route")]
             pub(crate) route: crate::protocol::generated::Route
@@ -3362,6 +3483,11 @@ pub mod page {
         pub struct WebSocket {
             #[serde(rename = "webSocket")]
             pub(crate) web_socket: crate::protocol::generated::WebSocket
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct WebSocketRoute {
+            #[serde(rename = "webSocketRoute")]
+            pub(crate) web_socket_route: crate::protocol::generated::WebSocketRoute
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Worker {
@@ -3393,7 +3519,10 @@ pub mod page {
         pub type BringToFrontArgs = ();
         pub type Close = ();
         #[derive(Debug, Serialize, Deserialize)]
-        pub struct CloseArgs {
+        pub struct CloseArgs<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "reason")]
+            pub(crate) reason: Option<&'a str>,
             #[serde(rename = "runBeforeUnload")]
             pub(crate) run_before_unload: Option<bool>
         }
@@ -3458,37 +3587,38 @@ pub mod page {
             #[serde(rename = "log")]
             pub(crate) log: Option<Vec<String>>,
             #[serde(rename = "previous")]
-            pub(crate) previous: Option<Vec<u8>>
+            pub(crate) previous: Option<Vec<u8>>,
+            #[serde(rename = "timedOut")]
+            pub(crate) timed_out: Option<bool>
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct ExpectScreenshotArgs<'a> {
+            #[serde(flatten)]
+            #[serde(rename = "$mixin")]
+            pub(crate) mixin: crate::protocol::generated::CommonScreenshotOptions,
+            #[serde(rename = "clip")]
+            pub(crate) clip: Option<crate::protocol::generated::Rect>,
             #[serde(borrow)]
-            #[serde(rename = "comparatorOptions")]
-            pub(crate) comparator_options: Option<ExpectScreenshotArgsComparatorOptions<'a>>,
+            #[serde(rename = "comparator")]
+            pub(crate) comparator: Option<&'a str>,
             #[serde(borrow)]
             #[serde(rename = "expected")]
             pub(crate) expected: Option<&'a [u8]>,
+            #[serde(rename = "fullPage")]
+            pub(crate) full_page: Option<bool>,
             #[serde(rename = "isNot")]
             pub(crate) is_not: bool,
             #[serde(borrow)]
             #[serde(rename = "locator")]
             pub(crate) locator: Option<ExpectScreenshotArgsLocator<'a>>,
-            #[serde(rename = "screenshotOptions")]
-            pub(crate) screenshot_options: Option<ExpectScreenshotArgsScreenshotOptions>,
-            #[serde(rename = "timeout")]
-            pub(crate) timeout: Option<serde_json::Number>
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        pub struct ExpectScreenshotArgsComparatorOptions<'a> {
-            #[serde(borrow)]
-            #[serde(rename = "comparator")]
-            pub(crate) comparator: Option<&'a str>,
             #[serde(rename = "maxDiffPixelRatio")]
             pub(crate) max_diff_pixel_ratio: Option<serde_json::Number>,
             #[serde(rename = "maxDiffPixels")]
             pub(crate) max_diff_pixels: Option<serde_json::Number>,
             #[serde(rename = "threshold")]
-            pub(crate) threshold: Option<serde_json::Number>
+            pub(crate) threshold: Option<serde_json::Number>,
+            #[serde(rename = "timeout")]
+            pub(crate) timeout: serde_json::Number
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct ExpectScreenshotArgsLocator<'a> {
@@ -3497,16 +3627,6 @@ pub mod page {
             #[serde(borrow)]
             #[serde(rename = "selector")]
             pub(crate) selector: &'a str
-        }
-        #[derive(Debug, Serialize, Deserialize)]
-        pub struct ExpectScreenshotArgsScreenshotOptions {
-            #[serde(flatten)]
-            #[serde(rename = "$mixin")]
-            pub(crate) mixin: crate::protocol::generated::CommonScreenshotOptions,
-            #[serde(rename = "clip")]
-            pub(crate) clip: Option<crate::protocol::generated::Rect>,
-            #[serde(rename = "fullPage")]
-            pub(crate) full_page: Option<bool>
         }
         pub type ExposeBinding = ();
         #[derive(Debug, Serialize, Deserialize)]
@@ -3681,6 +3801,8 @@ pub mod page {
             #[serde(borrow)]
             #[serde(rename = "margin")]
             pub(crate) margin: Option<PdfArgsMargin<'a>>,
+            #[serde(rename = "outline")]
+            pub(crate) outline: Option<bool>,
             #[serde(borrow)]
             #[serde(rename = "pageRanges")]
             pub(crate) page_ranges: Option<&'a str>,
@@ -3690,6 +3812,8 @@ pub mod page {
             pub(crate) print_background: Option<bool>,
             #[serde(rename = "scale")]
             pub(crate) scale: Option<serde_json::Number>,
+            #[serde(rename = "tagged")]
+            pub(crate) tagged: Option<bool>,
             #[serde(borrow)]
             #[serde(rename = "width")]
             pub(crate) width: Option<&'a str>
@@ -3710,6 +3834,19 @@ pub mod page {
             pub(crate) top: Option<&'a str>
         }
         #[derive(Debug, Serialize, Deserialize)]
+        pub struct RegisterLocatorHandler {
+            #[serde(rename = "uid")]
+            pub(crate) uid: serde_json::Number
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct RegisterLocatorHandlerArgs<'a> {
+            #[serde(rename = "noWaitAfter")]
+            pub(crate) no_wait_after: Option<bool>,
+            #[serde(borrow)]
+            #[serde(rename = "selector")]
+            pub(crate) selector: &'a str
+        }
+        #[derive(Debug, Serialize, Deserialize)]
         pub struct Reload {
             #[serde(rename = "response")]
             pub(crate) response: Option<crate::protocol::generated::Response>
@@ -3720,6 +3857,16 @@ pub mod page {
             pub(crate) timeout: Option<serde_json::Number>,
             #[serde(rename = "waitUntil")]
             pub(crate) wait_until: Option<crate::protocol::generated::LifecycleEvent>
+        }
+        pub type RequestGc = ();
+        pub type RequestGcArgs = ();
+        pub type ResolveLocatorHandlerNoReply = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct ResolveLocatorHandlerNoReplyArgs {
+            #[serde(rename = "remove")]
+            pub(crate) remove: Option<bool>,
+            #[serde(rename = "uid")]
+            pub(crate) uid: serde_json::Number
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Screenshot {
@@ -3798,6 +3945,25 @@ pub mod page {
             pub(crate) height: serde_json::Number,
             #[serde(rename = "width")]
             pub(crate) width: serde_json::Number
+        }
+        pub type SetWebSocketInterceptionPatterns = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct SetWebSocketInterceptionPatternsArgs<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "patterns")]
+            pub(crate) patterns: Vec<SetWebSocketInterceptionPatternsArgsPatterns<'a>>
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct SetWebSocketInterceptionPatternsArgsPatterns<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "glob")]
+            pub(crate) glob: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "regexFlags")]
+            pub(crate) regex_flags: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "regexSource")]
+            pub(crate) regex_source: Option<&'a str>
         }
         pub type StartCssCoverage = ();
         #[derive(Debug, Serialize, Deserialize)]
@@ -3878,6 +4044,12 @@ pub mod page {
             #[serde(rename = "y")]
             pub(crate) y: serde_json::Number
         }
+        pub type UnregisterLocatorHandler = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct UnregisterLocatorHandlerArgs {
+            #[serde(rename = "uid")]
+            pub(crate) uid: serde_json::Number
+        }
         pub type UpdateSubscription = ();
         #[derive(Debug, Serialize, Deserialize)]
         pub struct UpdateSubscriptionArgs {
@@ -3911,6 +4083,10 @@ pub mod playwright {
     pub struct Initializer {
         #[serde(rename = "android")]
         pub(crate) android: crate::protocol::generated::Android,
+        #[serde(rename = "bidiChromium")]
+        pub(crate) bidi_chromium: crate::protocol::generated::BrowserType,
+        #[serde(rename = "bidiFirefox")]
+        pub(crate) bidi_firefox: crate::protocol::generated::BrowserType,
         #[serde(rename = "chromium")]
         pub(crate) chromium: crate::protocol::generated::BrowserType,
         #[serde(rename = "electron")]
@@ -3941,6 +4117,9 @@ pub mod playwright {
             #[serde(borrow)]
             #[serde(rename = "baseURL")]
             pub(crate) base_url: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "clientCertificates")]
+            pub(crate) client_certificates: Option<Vec<NewRequestArgsClientCertificates<'a>>>,
             #[serde(rename = "extraHTTPHeaders")]
             pub(crate) extra_http_headers: Option<Vec<crate::protocol::generated::NameValue>>,
             #[serde(borrow)]
@@ -3963,6 +4142,24 @@ pub mod playwright {
             pub(crate) user_agent: Option<&'a str>
         }
         #[derive(Debug, Serialize, Deserialize)]
+        pub struct NewRequestArgsClientCertificates<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "cert")]
+            pub(crate) cert: Option<&'a [u8]>,
+            #[serde(borrow)]
+            #[serde(rename = "key")]
+            pub(crate) key: Option<&'a [u8]>,
+            #[serde(borrow)]
+            #[serde(rename = "origin")]
+            pub(crate) origin: &'a str,
+            #[serde(borrow)]
+            #[serde(rename = "passphrase")]
+            pub(crate) passphrase: Option<&'a str>,
+            #[serde(borrow)]
+            #[serde(rename = "pfx")]
+            pub(crate) pfx: Option<&'a [u8]>
+        }
+        #[derive(Debug, Serialize, Deserialize)]
         pub struct NewRequestArgsHttpCredentials<'a> {
             #[serde(borrow)]
             #[serde(rename = "origin")]
@@ -3970,9 +4167,18 @@ pub mod playwright {
             #[serde(borrow)]
             #[serde(rename = "password")]
             pub(crate) password: &'a str,
+            #[serde(rename = "send")]
+            pub(crate) send: Option<NewRequestArgsHttpCredentialsSend>,
             #[serde(borrow)]
             #[serde(rename = "username")]
             pub(crate) username: &'a str
+        }
+        #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+        pub enum NewRequestArgsHttpCredentialsSend {
+            #[serde(rename = "always")]
+            Always,
+            #[serde(rename = "unauthorized")]
+            Unauthorized
         }
         #[derive(Debug, Serialize, Deserialize)]
         pub struct NewRequestArgsProxy<'a> {
@@ -4127,10 +4333,7 @@ pub mod route {
         pub struct AbortArgs<'a> {
             #[serde(borrow)]
             #[serde(rename = "errorCode")]
-            pub(crate) error_code: Option<&'a str>,
-            #[serde(borrow)]
-            #[serde(rename = "requestUrl")]
-            pub(crate) request_url: &'a str
+            pub(crate) error_code: Option<&'a str>
         }
         pub type Continue = ();
         #[derive(Debug, Serialize, Deserialize)]
@@ -4145,9 +4348,6 @@ pub mod route {
             #[serde(borrow)]
             #[serde(rename = "postData")]
             pub(crate) post_data: Option<&'a [u8]>,
-            #[serde(borrow)]
-            #[serde(rename = "requestUrl")]
-            pub(crate) request_url: &'a str,
             #[serde(borrow)]
             #[serde(rename = "url")]
             pub(crate) url: Option<&'a str>
@@ -4165,9 +4365,6 @@ pub mod route {
             pub(crate) headers: Option<Vec<crate::protocol::generated::NameValue>>,
             #[serde(rename = "isBase64")]
             pub(crate) is_base64: Option<bool>,
-            #[serde(borrow)]
-            #[serde(rename = "requestUrl")]
-            pub(crate) request_url: &'a str,
             #[serde(rename = "status")]
             pub(crate) status: Option<serde_json::Number>
         }
@@ -4310,6 +4507,28 @@ pub mod stream {
 pub(crate) type Tracing = OnlyGuid;
 pub mod tracing {
     pub mod commands {
+        pub type TracingGroup = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct TracingGroupArgs<'a> {
+            #[serde(borrow)]
+            #[serde(rename = "location")]
+            pub(crate) location: Option<TracingGroupArgsLocation<'a>>,
+            #[serde(borrow)]
+            #[serde(rename = "name")]
+            pub(crate) name: &'a str
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct TracingGroupArgsLocation<'a> {
+            #[serde(rename = "column")]
+            pub(crate) column: Option<serde_json::Number>,
+            #[serde(borrow)]
+            #[serde(rename = "file")]
+            pub(crate) file: &'a str,
+            #[serde(rename = "line")]
+            pub(crate) line: Option<serde_json::Number>
+        }
+        pub type TracingGroupEnd = ();
+        pub type TracingGroupEndArgs = ();
         pub type TracingStart = ();
         #[derive(Debug, Serialize, Deserialize)]
         pub struct TracingStartArgs<'a> {
@@ -4401,6 +4620,105 @@ pub mod web_socket {
         pub struct SocketError {
             #[serde(rename = "error")]
             pub(crate) error: String
+        }
+    }
+}
+pub(crate) type WebSocketRoute = OnlyGuid;
+pub mod web_socket_route {
+    #[derive(Debug, Serialize, Deserialize)]
+    pub struct Initializer {
+        #[serde(rename = "url")]
+        pub(crate) url: String
+    }
+    pub mod events {
+        #[derive(Debug, Deserialize, Serialize)]
+        pub enum Events {
+            #[serde(rename = "closePage")]
+            ClosePage(ClosePage),
+            #[serde(rename = "closeServer")]
+            CloseServer(CloseServer),
+            #[serde(rename = "messageFromPage")]
+            MessageFromPage(MessageFromPage),
+            #[serde(rename = "messageFromServer")]
+            MessageFromServer(MessageFromServer)
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct ClosePage {
+            #[serde(rename = "code")]
+            pub(crate) code: Option<serde_json::Number>,
+            #[serde(rename = "reason")]
+            pub(crate) reason: Option<String>,
+            #[serde(rename = "wasClean")]
+            pub(crate) was_clean: bool
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct CloseServer {
+            #[serde(rename = "code")]
+            pub(crate) code: Option<serde_json::Number>,
+            #[serde(rename = "reason")]
+            pub(crate) reason: Option<String>,
+            #[serde(rename = "wasClean")]
+            pub(crate) was_clean: bool
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct MessageFromPage {
+            #[serde(rename = "isBase64")]
+            pub(crate) is_base64: bool,
+            #[serde(rename = "message")]
+            pub(crate) message: String
+        }
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct MessageFromServer {
+            #[serde(rename = "isBase64")]
+            pub(crate) is_base64: bool,
+            #[serde(rename = "message")]
+            pub(crate) message: String
+        }
+    }
+    pub mod commands {
+        pub type ClosePage = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct ClosePageArgs<'a> {
+            #[serde(rename = "code")]
+            pub(crate) code: Option<serde_json::Number>,
+            #[serde(borrow)]
+            #[serde(rename = "reason")]
+            pub(crate) reason: Option<&'a str>,
+            #[serde(rename = "wasClean")]
+            pub(crate) was_clean: bool
+        }
+        pub type CloseServer = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct CloseServerArgs<'a> {
+            #[serde(rename = "code")]
+            pub(crate) code: Option<serde_json::Number>,
+            #[serde(borrow)]
+            #[serde(rename = "reason")]
+            pub(crate) reason: Option<&'a str>,
+            #[serde(rename = "wasClean")]
+            pub(crate) was_clean: bool
+        }
+        pub type Connect = ();
+        pub type ConnectArgs = ();
+        pub type EnsureOpened = ();
+        pub type EnsureOpenedArgs = ();
+        pub type SendToPage = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct SendToPageArgs<'a> {
+            #[serde(rename = "isBase64")]
+            pub(crate) is_base64: bool,
+            #[serde(borrow)]
+            #[serde(rename = "message")]
+            pub(crate) message: &'a str
+        }
+        pub type SendToServer = ();
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct SendToServerArgs<'a> {
+            #[serde(rename = "isBase64")]
+            pub(crate) is_base64: bool,
+            #[serde(borrow)]
+            #[serde(rename = "message")]
+            pub(crate) message: &'a str
         }
     }
 }
@@ -4695,8 +5013,8 @@ pub struct Metadata {
     pub(crate) internal: Option<bool>,
     #[serde(rename = "location")]
     pub(crate) location: Option<MetadataLocation>,
-    #[serde(rename = "wallTime")]
-    pub(crate) wall_time: Option<serde_json::Number>
+    #[serde(rename = "stepId")]
+    pub(crate) step_id: Option<String>
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MetadataLocation {
@@ -4904,6 +5222,8 @@ pub struct SerializedValue {
     pub(crate) bi: Option<String>,
     #[serde(rename = "d")]
     pub(crate) d: Option<String>,
+    #[serde(rename = "e")]
+    pub(crate) e: Option<SerializedValueE>,
     #[serde(rename = "h")]
     pub(crate) h: Option<serde_json::Number>,
     #[serde(rename = "id")]
@@ -4922,6 +5242,15 @@ pub struct SerializedValue {
     pub(crate) u: Option<String>,
     #[serde(rename = "v")]
     pub(crate) v: Option<SerializedValueV>
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SerializedValueE {
+    #[serde(rename = "m")]
+    pub(crate) m: String,
+    #[serde(rename = "n")]
+    pub(crate) n: String,
+    #[serde(rename = "s")]
+    pub(crate) s: String
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SerializedValueO {
@@ -5001,7 +5330,9 @@ pub struct CommonScreenshotOptions {
     #[serde(rename = "omitBackground")]
     pub(crate) omit_background: Option<bool>,
     #[serde(rename = "scale")]
-    pub(crate) scale: Option<CommonScreenshotOptionsScale>
+    pub(crate) scale: Option<CommonScreenshotOptionsScale>,
+    #[serde(rename = "style")]
+    pub(crate) style: Option<String>
 }
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
 pub enum CommonScreenshotOptionsAnimations {
@@ -5032,6 +5363,26 @@ pub enum CommonScreenshotOptionsScale {
     Device
 }
 #[derive(Debug, Serialize, Deserialize)]
+pub struct ConsoleMessage {
+    #[serde(rename = "args")]
+    pub(crate) args: Vec<crate::protocol::generated::JsHandle>,
+    #[serde(rename = "location")]
+    pub(crate) location: ConsoleMessageLocation,
+    #[serde(rename = "text")]
+    pub(crate) text: String,
+    #[serde(rename = "type")]
+    pub(crate) r#type: String
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ConsoleMessageLocation {
+    #[serde(rename = "columnNumber")]
+    pub(crate) column_number: serde_json::Number,
+    #[serde(rename = "lineNumber")]
+    pub(crate) line_number: serde_json::Number,
+    #[serde(rename = "url")]
+    pub(crate) url: String
+}
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ContextOptions {
     #[serde(rename = "acceptDownloads")]
     pub(crate) accept_downloads: Option<ContextOptionsAcceptDownloads>,
@@ -5039,6 +5390,8 @@ pub struct ContextOptions {
     pub(crate) base_url: Option<String>,
     #[serde(rename = "bypassCSP")]
     pub(crate) bypass_csp: Option<bool>,
+    #[serde(rename = "clientCertificates")]
+    pub(crate) client_certificates: Option<Vec<ContextOptionsClientCertificates>>,
     #[serde(rename = "colorScheme")]
     pub(crate) color_scheme: Option<ContextOptionsColorScheme>,
     #[serde(rename = "deviceScaleFactor")]
@@ -5095,6 +5448,19 @@ pub enum ContextOptionsAcceptDownloads {
     #[serde(rename = "internal-browser-default")]
     InternalBrowserDefault
 }
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ContextOptionsClientCertificates {
+    #[serde(rename = "cert")]
+    pub(crate) cert: Option<Vec<u8>>,
+    #[serde(rename = "key")]
+    pub(crate) key: Option<Vec<u8>>,
+    #[serde(rename = "origin")]
+    pub(crate) origin: String,
+    #[serde(rename = "passphrase")]
+    pub(crate) passphrase: Option<String>,
+    #[serde(rename = "pfx")]
+    pub(crate) pfx: Option<Vec<u8>>
+}
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
 pub enum ContextOptionsColorScheme {
     #[serde(rename = "dark")]
@@ -5130,8 +5496,17 @@ pub struct ContextOptionsHttpCredentials {
     pub(crate) origin: Option<String>,
     #[serde(rename = "password")]
     pub(crate) password: String,
+    #[serde(rename = "send")]
+    pub(crate) send: Option<ContextOptionsHttpCredentialsSend>,
     #[serde(rename = "username")]
     pub(crate) username: String
+}
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+pub enum ContextOptionsHttpCredentialsSend {
+    #[serde(rename = "always")]
+    Always,
+    #[serde(rename = "unauthorized")]
+    Unauthorized
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ContextOptionsRecordVideo {
@@ -5193,6 +5568,8 @@ pub struct LaunchOptions {
     pub(crate) env: Option<Vec<crate::protocol::generated::NameValue>>,
     #[serde(rename = "executablePath")]
     pub(crate) executable_path: Option<String>,
+    #[serde(rename = "firefoxUserPrefs")]
+    pub(crate) firefox_user_prefs: Option<String>,
     #[serde(rename = "handleSIGHUP")]
     pub(crate) handle_sighup: Option<bool>,
     #[serde(rename = "handleSIGINT")]
