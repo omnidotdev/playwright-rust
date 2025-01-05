@@ -1,5 +1,5 @@
-use base64::Engine;
 use crate::imp::prelude::*;
+use base64::Engine;
 
 #[derive(Debug, Deserialize, Clone, Serialize, PartialEq, Eq)]
 pub struct Viewport {

@@ -1,4 +1,4 @@
-use crate::imp::{core::*, dialog::Dialog as Impl, prelude::*};
+use crate::imp::{dialog::Dialog as Impl, prelude::*};
 
 /// `Dialog` objects are dispatched by page via the [page::Event::Dialog](crate::api::page::Event::Dialog) event.
 ///

@@ -14,7 +14,7 @@ use crate::{
         }
     }
 };
-use std::{borrow::Borrow, fs};
+use std::fs;
 
 /// ElementHandle represents an in-page DOM element. ElementHandles can be created with the [`method: Page.querySelector`]
 /// method.

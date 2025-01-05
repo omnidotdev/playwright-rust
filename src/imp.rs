@@ -1,6 +1,7 @@
 pub(crate) mod impl_future {
     pub use std::task;
 }
+
 pub(crate) mod prelude {
     pub use parking_lot::Mutex;
     pub use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -8,13 +9,8 @@ pub(crate) mod prelude {
     pub use std::{
         collections::HashMap,
         convert::{TryFrom, TryInto},
-        future::Future,
         path::{Path, PathBuf},
-        sync::{
-            Arc,
-            Weak
-            // Mutex, MutexGuard
-        },
+        sync::{Arc, Weak},
         task::{Poll, Waker},
         time::Duration
     };

@@ -1,6 +1,6 @@
 use super::Which;
 use futures::stream::StreamExt;
-use playwright::api::{page, BrowserContext, File, Geolocation, Page, Viewport};
+use playwright::api::{page, BrowserContext, Geolocation, Page, Viewport};
 
 macro_rules! concurrent {
     ($which:expr, $($e:expr),*) => {

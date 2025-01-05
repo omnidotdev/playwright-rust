@@ -1,4 +1,3 @@
-use base64::Engine;
 use crate::{
     imp::{
         browser_context::BrowserContext,
@@ -18,6 +17,7 @@ use crate::{
     },
     protocol::generated::LifecycleEvent
 };
+use base64::Engine;
 
 #[derive(Debug)]
 pub(crate) struct Page {
@@ -246,7 +246,9 @@ impl Page {
         let path = args.path.clone();
         let v = send_message!(self, "pdf", args);
         let b64 = only_str(&v)?;
-        let bytes = base64::engine::general_purpose::STANDARD.decode(b64).map_err(Error::InvalidBase64)?;
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(b64)
+            .map_err(Error::InvalidBase64)?;
         may_save(path.as_deref(), &bytes)?;
         Ok(bytes)
     }
@@ -267,7 +269,9 @@ impl Page {
         let path = args.path.clone();
         let v = send_message!(self, "screenshot", args);
         let b64 = only_str(&v)?;
-        let bytes = base64::engine::general_purpose::STANDARD.decode(b64).map_err(Error::InvalidBase64)?;
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(b64)
+            .map_err(Error::InvalidBase64)?;
         may_save(path.as_deref(), &bytes)?;
         Ok(bytes)
     }
