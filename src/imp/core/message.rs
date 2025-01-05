@@ -21,17 +21,11 @@ pub(crate) struct Req<'a, 'b> {
 
 impl Default for crate::protocol::generated::Metadata {
     fn default() -> Self {
-        let wall_time = Number::from(
-            std::time::SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_secs()
-        );
         Self {
             api_name: None,
             internal: None,
             location: None,
-            wall_time: Some(wall_time)
+            step_id: Some(String::from(""))
         }
     }
 }
