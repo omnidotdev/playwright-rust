@@ -530,8 +530,8 @@ impl Frame {
         let load_states = &mut var.load_states;
         match op {
             Op::Add(x) => {
-                load_states.insert(x);
-                self.emit_event(Evt::LoadState(x));
+                load_states.insert(x.clone());
+                self.emit_event(Evt::LoadState(x.clone()));
                 if let Some(page) = var.page.as_ref().and_then(|p| p.upgrade()) {
                     match x {
                         LifecycleEvent::Load => {
