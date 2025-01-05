@@ -13,9 +13,11 @@ impl Driver {
 
     pub fn install() -> io::Result<Self> {
         let this = Self::new(Self::default_dest());
+
         if !this.path.is_dir() {
             this.prepare()?;
         }
+
         Ok(this)
     }
 
@@ -38,19 +40,16 @@ impl Driver {
         ]
         .iter()
         .collect();
+
         dir
     }
 
     pub fn platform(&self) -> Platform { Platform::from_str(Self::PLATFORM).unwrap() }
 
     pub fn executable(&self) -> PathBuf {
-        match self.platform() {
-            Platform::Linux => self.path.join("playwright.sh"),
-            Platform::LinuxArm64 => self.path.join("playwright.sh"),
-            Platform::Mac => self.path.join("playwright.sh"),
-            Platform::MacArm64 => self.path.join("playwright.sh"),
-            Platform::Win32X64 => self.path.join("playwright.cmd")
-        }
+        let path = self.path.join("package/cli.js");
+
+        path
     }
 }
 
