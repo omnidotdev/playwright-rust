@@ -4,7 +4,8 @@ use std::{
     path::{Path, PathBuf, MAIN_SEPARATOR}
 };
 
-const DRIVER_VERSION: &'static str = "1.39.0";
+// Playwright version (https://playwright.dev/docs/release-notes)
+const DRIVER_VERSION: &'static str = "1.49.1";
 
 fn main() {
     let out_dir: PathBuf = env::var_os("OUT_DIR").unwrap().into();
@@ -71,19 +72,16 @@ fn size(p: &Path) -> u64 {
 fn download(_url: &str, dest: &Path) { File::create(dest).unwrap(); }
 
 fn url(platform: Platform) -> String {
-    let next = (DRIVER_VERSION.contains("-next")
-        || DRIVER_VERSION.contains("-alpha")
-        || DRIVER_VERSION.contains("-beta"))
-    .then(|| "next/")
-    .unwrap_or_default();
     let k = format!(
-        "https://playwright.azureedge.net/builds/driver/{}playwright-{}-{}.zip",
-        next, DRIVER_VERSION, platform
+        "https://playwright.azureedge.net/builds/driver/playwright-{}-{}.zip",
+        DRIVER_VERSION, platform
     );
+
     println!("[[[{}]]]", k);
+
     format!(
-        "https://playwright.azureedge.net/builds/driver/{}playwright-{}-{}.zip",
-        next, DRIVER_VERSION, platform
+        "https://playwright.azureedge.net/builds/driver/playwright-{}-{}.zip",
+        DRIVER_VERSION, platform
     )
 }
 
