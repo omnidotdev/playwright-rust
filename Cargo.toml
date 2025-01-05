@@ -36,7 +36,7 @@ futures = "0.3.16"
 serde_with = { version = "1.9.4", default-features = false, features = ["macros"] }
 
 [dev-dependencies]
-env_logger = "0.9.0"
+env_logger = "0.11.0"
 tempdir = "0.3.7"
 tide = "0.16.0"
 warp = "0.3.1"
