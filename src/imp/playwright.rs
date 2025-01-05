@@ -1,7 +1,9 @@
 use crate::{
     api::{browser::ContextBuilder, browser_type::PersistentContextLauncher},
     imp::{browser_type::BrowserType, core::*, prelude::*, selectors::Selectors, utils::Viewport},
-    protocol::generated::{playwright as protocol, root::commands::InitializeArgsSdkLanguage}
+    protocol::generated::{
+        local_utils, playwright as protocol, root::commands::InitializeArgsSdkLanguage
+    }
 };
 
 #[derive(Debug)]
@@ -20,7 +22,8 @@ impl Playwright {
         let protocol::Initializer {
             android: _,
             chromium,
-            device_descriptors,
+            bidi_chromium: _,
+            bidi_firefox: _,
             electron: _,
             firefox,
             pre_connected_android_device: _,
@@ -34,6 +37,8 @@ impl Playwright {
         let firefox = get_object!(ctx, &firefox.guid, BrowserType)?;
         let webkit = get_object!(ctx, &webkit.guid, BrowserType)?;
         let selectors = get_object!(ctx, &selectors.guid, Selectors)?;
+        let local_utils::Initializer { device_descriptors } =
+            serde_json::from_value(channel.initializer.clone())?;
         let devices = device_descriptors
             .into_iter()
             .map(TryInto::try_into)
@@ -70,6 +75,7 @@ impl Playwright {
             let root = get_object!(ctx, &S::validate("").unwrap(), Root)?;
             upgrade(&root)?
         };
+
         let v = send_message!(
             root,
             "initialize",
@@ -77,13 +83,19 @@ impl Playwright {
                 sdk_language: InitializeArgsSdkLanguage::Python
             }
         );
+
         let v = Arc::unwrap_or_clone(v);
+
         let crate::protocol::generated::root::commands::Initialize {
             playwright: crate::protocol::generated::Playwright { guid }
         } = serde_json::from_value(v)?;
+
         let ctx = upgrade(&conn.context())?;
+
         let ctx = ctx.lock();
+
         let p = get_object!(ctx, &guid, Playwright)?;
+
         Ok(p)
     }
 }
@@ -102,16 +114,16 @@ pub struct DeviceDescriptor {
     pub device_scale_factor: f64,
     pub is_mobile: bool,
     pub has_touch: bool,
-    pub default_browser_type: protocol::InitializerDeviceDescriptorsDescriptorDefaultBrowserType
+    pub default_browser_type: local_utils::InitializerDeviceDescriptorsDescriptorDefaultBrowserType
 }
 
-impl TryFrom<protocol::InitializerDeviceDescriptors> for DeviceDescriptor {
+impl TryFrom<local_utils::InitializerDeviceDescriptors> for DeviceDescriptor {
     type Error = ();
-    fn try_from(x: protocol::InitializerDeviceDescriptors) -> Result<Self, Self::Error> {
-        let protocol::InitializerDeviceDescriptors {
+    fn try_from(x: local_utils::InitializerDeviceDescriptors) -> Result<Self, Self::Error> {
+        let local_utils::InitializerDeviceDescriptors {
             name,
             descriptor:
-                protocol::InitializerDeviceDescriptorsDescriptor {
+                local_utils::InitializerDeviceDescriptorsDescriptor {
                     default_browser_type,
                     device_scale_factor,
                     has_touch,
@@ -138,24 +150,24 @@ impl TryFrom<protocol::InitializerDeviceDescriptors> for DeviceDescriptor {
     }
 }
 
-impl TryFrom<protocol::InitializerDeviceDescriptorsDescriptorScreen> for Viewport {
+impl TryFrom<local_utils::InitializerDeviceDescriptorsDescriptorScreen> for Viewport {
     type Error = ();
     fn try_from(
-        x: protocol::InitializerDeviceDescriptorsDescriptorScreen
+        x: local_utils::InitializerDeviceDescriptorsDescriptorScreen
     ) -> Result<Self, Self::Error> {
-        let protocol::InitializerDeviceDescriptorsDescriptorScreen { height, width } = x;
+        let local_utils::InitializerDeviceDescriptorsDescriptorScreen { height, width } = x;
         let width: i32 = width.as_i64().ok_or(())?.try_into().map_err(|_| ())?;
         let height: i32 = height.as_i64().ok_or(())?.try_into().map_err(|_| ())?;
         Ok(Self { width, height })
     }
 }
 
-impl TryFrom<protocol::InitializerDeviceDescriptorsDescriptorViewport> for Viewport {
+impl TryFrom<local_utils::InitializerDeviceDescriptorsDescriptorViewport> for Viewport {
     type Error = ();
     fn try_from(
-        x: protocol::InitializerDeviceDescriptorsDescriptorViewport
+        x: local_utils::InitializerDeviceDescriptorsDescriptorViewport
     ) -> Result<Self, Self::Error> {
-        let protocol::InitializerDeviceDescriptorsDescriptorViewport { height, width } = x;
+        let local_utils::InitializerDeviceDescriptorsDescriptorViewport { height, width } = x;
         let width: i32 = width.as_i64().ok_or(())?.try_into().map_err(|_| ())?;
         let height: i32 = height.as_i64().ok_or(())?.try_into().map_err(|_| ())?;
         Ok(Self { width, height })
