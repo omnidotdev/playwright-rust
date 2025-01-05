@@ -11,6 +11,7 @@ async fn main() -> Result<(), playwright::Error> {
     let browser = chromium.launcher().headless(true).launch().await?;
     let context = browser.context_builder().build().await?;
     let page = context.new_page().await?;
+
     page.goto_builder("https://docs.rs/playwright/0.0.5/playwright/")
         .goto()
         .await?;
@@ -31,5 +32,6 @@ async fn main() -> Result<(), playwright::Error> {
     // [many functions wait contents automaticaly](https://playwright.dev/docs/actionability/).
     page.expect_event(playwright::api::page::EventType::Load)
         .await?;
+
     Ok(())
 }

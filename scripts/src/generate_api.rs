@@ -46,7 +46,7 @@ fn body(x: &Interface) -> TokenStream {
         .filter(|m| m.orig.overload_index == 0)
         .map(|m| {
             // let overloads = overload_targets.remove(&*m.orig.alias);
-            method_tokens(m/*, overloads*/)
+            method_tokens(m /* , overloads */)
         });
     let events = event.map(|event| event_tokens(event));
     quote! {
@@ -143,31 +143,33 @@ fn format_use_ty(x: &types::Model) -> TokenStream {
             let z = format_use_ty(z);
             quote!(HashMap<#y, #z>)
         }
-        Model::Known { name, .. } => {
-            match name.as_ref() {
-                "binary" if reference => quote!(&'a [u8]),
-                "binary" => quote!(Vec<u8>),
-                "json" if reference => quote!(&'a str),
-                "json" => quote!(String),
-                "string" if reference => quote!(&'a str),
-                "string" => quote!(String),
-                "number" => quote!(serde_json::Number),
-                "float" => quote!(f64),
-                "boolean" => quote!(bool),
-                "void" => quote!(()),
-                "JsonElement?" => quote!(()),
-                _ => {
-                    let n = format_ident!("{}", name);
-                    assert!(!reference);
-                    quote!(#n)
-                }
+        Model::Known { name, .. } => match name.as_ref() {
+            "binary" if reference => quote!(&'a [u8]),
+            "binary" => quote!(Vec<u8>),
+            "json" if reference => quote!(&'a str),
+            "json" => quote!(String),
+            "string" if reference => quote!(&'a str),
+            "string" => quote!(String),
+            "number" => quote!(serde_json::Number),
+            "float" => quote!(f64),
+            "boolean" => quote!(bool),
+            "void" => quote!(()),
+            "JsonElement?" => quote!(()),
+            _ => {
+                let n = format_ident!("{}", name);
+                assert!(!reference);
+                quote!(#n)
             }
         }
     }
 }
 
 fn event_tokens(event: types::Event) -> TokenStream {
-    let types::Event { orig: _, model, which } = event;
+    let types::Event {
+        orig: _,
+        model,
+        which
+    } = event;
     let model = format_ty(&*model);
     let which = format_ty(&*which);
     quote! {
@@ -191,7 +193,7 @@ fn method_tokens(method: &types::Method) -> TokenStream {
                 args: _member_args,
                 ty: _member_ty,
                 deprecated,
-                spec: _spec // TODO
+                spec: _spec
             },
         args,
         builder,

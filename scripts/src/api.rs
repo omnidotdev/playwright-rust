@@ -9,9 +9,6 @@ pub struct Api(pub Vec<Interface>);
 #[derive(Debug, Deserialize)]
 pub struct Interface {
     pub name: String,
-    // langs
-    //#[serde(default)]
-    // pub comment: String,
     pub spec: Vec<SpecNode>,
     pub members: Vec<Member>,
     pub extends: Option<String>
@@ -33,19 +30,15 @@ pub struct Member {
     pub args: Vec<Arg>,
     #[serde(rename = "type")]
     pub ty: Type,
-    // langs
-    // paramOrOption null
     #[serde(default)]
     #[serde(deserialize_with = "string_as_bool")]
     pub deprecated: bool,
-    //#[serde(default)]
-    // pub comment: String,
     pub spec: Vec<SpecNode>
 }
 
 fn string_as_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
-    where
-        D: Deserializer<'de>,
+where
+    D: Deserializer<'de>
 {
     let s = <String as Deserialize>::deserialize(deserializer);
     Ok(match s {
@@ -53,7 +46,6 @@ fn string_as_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
         _ => true
     })
 }
-
 
 #[derive(Debug, Deserialize, PartialEq, Eq, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
@@ -85,11 +77,8 @@ pub struct Arg {
     #[serde(rename = "type")]
     pub ty: Type,
     pub langs: Langs,
-    // experimental
-    // paramOrOption
     pub since: String,
     pub overload_index: usize,
-    // pub comment: String,
     #[serde(default)]
     pub spec: Vec<SpecNode>,
     pub required: bool,
