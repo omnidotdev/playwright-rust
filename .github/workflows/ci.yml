@@ -40,7 +40,7 @@ jobs:
           cargo tarpaulin --out Xml --verbose --exclude-files scripts/ tests/ src/build.rs src/main.rs src/generated.rs
       - name: Upload to codecov.io
         if: success() && matrix.os == 'ubuntu-latest' && github.ref == 'refs/heads/master'
-        uses: codecov/codecov-action@v1.0.2
+        uses: codecov/codecov-action@v1.5.2
         with:
           file: cobertura.xml
           token: ${{secrets.CODECOV}}
