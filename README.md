@@ -1,3 +1,6 @@
+> [!WARNING]
+> This project is archived. To use Playwright, you can easily write your tests alongside your Rust source code in an [officially-supported language](https://playwright.dev/docs/languages) such as TypeScript, or if you prefer Rust you can use a tool like [https://github.com/mattsse/chromiumoxide](chromiumoxide).
+
 # 🎭 [Playwright](https://playwright.dev) for Rust
 
 [![crates.io](https://img.shields.io/crates/v/playwright)](https://crates.io/crates/playwright)
